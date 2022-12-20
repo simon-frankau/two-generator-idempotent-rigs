@@ -1,6 +1,6 @@
 # Element counter for a free idempotent rig on two generators
 
-Bit of a mouthful, yet? This is something I played around with based
+Bit of a mouthful, yes? This is something I played around with based
 off a series of Mastodon posts by @johncarlosbaez@mathstodon.xyz at
 https://mastodon.xyz/@johncarlosbaez@mathstodon.xyz/109544917481142671 .
 
