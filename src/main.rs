@@ -4,8 +4,10 @@
 // https://mastodon.xyz/@johncarlosbaez@mathstodon.xyz/109544917481142671
 //
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 use std::fmt;
+
+const NUM_RIGS: usize = 4 * 4 * 4 * 4 * 4 * 4 * 4;
 
 #[derive(Clone, Copy, Eq, Hash, PartialEq, Ord, PartialOrd)]
 struct Rig {
@@ -54,6 +56,28 @@ impl fmt::Display for Rig {
 }
 
 impl Rig {
+    fn from(i: usize) -> Rig {
+        Rig {
+            i: i & 3,
+            a: (i >> 2) & 3,
+            b: (i >> 4) & 3,
+            ab: (i >> 6) & 3,
+            ba: (i >> 8) & 3,
+            aba: (i >> 10) & 3,
+            bab: (i >> 12) & 3,
+        }
+    }
+
+    fn to_int(&self) -> usize {
+        self.i
+            + (self.a << 2)
+            + (self.b << 4)
+            + (self.ab << 6)
+            + (self.ba << 8)
+            + (self.aba << 10)
+            + (self.bab << 12)
+    }
+
     fn basis() -> Vec<Rig> {
         vec![
             Rig { i: 1, ..ZERO },
@@ -162,20 +186,9 @@ impl Rig {
     }
 }
 
-// Sort list and remove duplicates.
-fn normalise_list(rigs: &[Rig]) -> Vec<Rig> {
-    let mut unique_rigs = rigs
-        .iter()
-        .cloned()
-        .collect::<HashSet<Rig>>()
-        .into_iter()
-        .collect::<Vec<_>>();
-    unique_rigs.sort_unstable();
-    unique_rigs
-}
-
 // Combine pairs of existing elements, and add to the returned vector
 // if they've not been seen before.
+/*
 fn find_new_elements(rigs: &[Rig]) -> Vec<Rig> {
     let mut seen_rigs = rigs.iter().cloned().collect::<HashSet<Rig>>();
     let mut res = Vec::new();
@@ -195,8 +208,92 @@ fn find_new_elements(rigs: &[Rig]) -> Vec<Rig> {
     }
     res
 }
+ */
+
+// Implement union-find ourselves, again.
+#[derive(Debug, Clone, Eq, PartialEq)]
+struct RigUnion {
+    ptrs: Vec<usize>,
+}
+
+impl RigUnion {
+    fn new() -> RigUnion {
+	// Initially, all pointers point to themselves.
+	RigUnion {
+	    ptrs: (0 .. NUM_RIGS).collect::<Vec<_>>(),
+	}
+    }
+
+    fn union(&mut self, r1: &Rig, r2: &Rig) {
+	// Not efficient, just get it done.
+	let mut idx1 = r1.to_int();
+	let mut idx2 = r2.to_int();
+
+	// Dereference idx1's chain.
+	let mut tgt1 = idx1;
+	while self.ptrs[tgt1] != tgt1 {
+	    assert!(self.ptrs[tgt1] < tgt1);
+	    tgt1 = self.ptrs[tgt1];
+	}
+	// Dereference idx2's chain.
+	let mut tgt2 = idx2;
+	while self.ptrs[tgt2] != tgt2 {
+	    assert!(self.ptrs[tgt2] < tgt2);
+	    tgt2 = self.ptrs[tgt2];
+	}
+	let tgt = tgt1.min(tgt2);
+
+	// Repoint idx1's chain.
+	while self.ptrs[idx1] != idx1 {
+	    let tmp = self.ptrs[idx1];
+	    self.ptrs[idx1] = tgt;
+	    idx1 = tmp;
+	}
+	self.ptrs[idx1] = tgt;
+	// Repoint idx2's chain.
+	while self.ptrs[idx2] != idx2 {
+	    let tmp = self.ptrs[idx2];
+	    self.ptrs[idx2] = tgt;
+	    idx2 = tmp;
+	}
+	self.ptrs[idx2] = tgt;
+    }
+
+    fn to_classes(&mut self) -> Vec<Vec<Rig>> {
+	let mut sets: HashMap<usize, Vec<Rig>> = HashMap::new();
+	for i in 0..NUM_RIGS {
+	    let rig = Rig::from(i);
+	    // Normalise entry
+	    self.union(&rig, &rig);
+	    
+	    let tgt = self.ptrs[i];
+	    if !sets.contains_key(&tgt) {
+		sets.insert(tgt, vec![rig]);
+	    } else {
+		sets.get_mut(&tgt).unwrap().push(rig);
+	    }
+	}
+	sets.into_values().collect::<Vec<_>>()
+    }
+}
 
 fn main() {
+    let mut equiv_classes = RigUnion::new();
+
+    for i in 0..NUM_RIGS {
+	// Identify all rigs with their squares.
+	let rig = Rig::from(i);
+	let rigrig = rig.mul(&rig);
+	equiv_classes.union(&rig, &rigrig);
+    }
+
+    for (idx, ec) in equiv_classes.to_classes().iter().enumerate() {
+	print!("\n{}: ", idx);
+	for elt in ec.iter() {
+	    print!("{}, ", elt);
+	}
+    }
+    
     /*
         let equiv_classes: Vec<Vec<Rig>> = Rig::basis().iter().map(|x| vec![*x]).collect();
 
@@ -207,11 +304,11 @@ fn main() {
         println!("");
     }
          */
-    let new_elts = find_new_elements(&Rig::basis());
+/*    let new_elts = find_new_elements(&Rig::basis());
     for elt in new_elts.iter() {
         println!("{}", &elt);
     }
-
+*/
     /*
         in Rig::basis() {
             for r2 in Rig::basis() {
