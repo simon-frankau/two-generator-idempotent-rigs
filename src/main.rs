@@ -1,5 +1,6 @@
 //
-// Implementation of a free rig with two generators, as described at
+// Implementation of a idempotent free rig with two generators, as
+// described at
 //
 // https://mastodon.xyz/@johncarlosbaez@mathstodon.xyz/109544917481142671
 //
@@ -9,7 +10,8 @@ use std::fmt;
 
 const NUM_RIGS: usize = 4 * 4 * 4 * 4 * 4 * 4 * 4;
 
-#[derive(Clone, Copy, Eq, Hash, PartialEq, Ord, PartialOrd)]
+// Implementation of a free rig with idempotency and two generators.
+#[derive(Clone, Eq, Hash, PartialEq, Ord, PartialOrd)]
 struct Rig {
     i: usize,
     a: usize,
@@ -56,6 +58,7 @@ impl fmt::Display for Rig {
 }
 
 impl Rig {
+    // The set of rigs can be converted to/from numbers 0..NUM_RIGS.
     fn from(i: usize) -> Rig {
         Rig {
             i: i & 3,
@@ -78,19 +81,9 @@ impl Rig {
             + (self.bab << 12)
     }
 
-    fn basis() -> Vec<Rig> {
-        vec![
-            Rig { i: 1, ..ZERO },
-            Rig { a: 1, ..ZERO },
-            Rig { b: 1, ..ZERO },
-            Rig { ab: 1, ..ZERO },
-            Rig { ba: 1, ..ZERO },
-            Rig { aba: 1, ..ZERO },
-            Rig { bab: 1, ..ZERO },
-        ]
-    }
+    // Rules for addition and multiplication written out longhand
+    // because I'm silly.
 
-    // Rules written out by hand because I'm silly.
     fn add(&self, other: &Rig) -> Rig {
         Rig {
             i: self.i + other.i,
@@ -164,7 +157,7 @@ impl Rig {
     // Due to idempotency, x + x = (x + x) * (x + x) = x + x + x + x,
     // so we can always reduce 4x to 2x.
     //
-    // Moreover, 4x y = 4 xy = 2 xy = 2x y, so normalising down
+    // Moreover, 4x y = 4 xy = 2 xy = 2x y, so always normalising down
     // doesn't change the "reachable" elements.
     fn normalise(&self) -> Rig {
         fn n(i: usize) -> usize {
@@ -186,31 +179,7 @@ impl Rig {
     }
 }
 
-// Combine pairs of existing elements, and add to the returned vector
-// if they've not been seen before.
-/*
-fn find_new_elements(rigs: &[Rig]) -> Vec<Rig> {
-    let mut seen_rigs = rigs.iter().cloned().collect::<HashSet<Rig>>();
-    let mut res = Vec::new();
-    for r1 in rigs.iter() {
-        for r2 in rigs.iter() {
-            let r_add = r1.add(r2);
-            if !seen_rigs.contains(&r_add) {
-                seen_rigs.insert(r_add);
-                res.push(r_add);
-            }
-            let r_mul = r1.mul(r2);
-            if !seen_rigs.contains(&r_mul) {
-                seen_rigs.insert(r_mul);
-                res.push(r_mul);
-            }
-        }
-    }
-    res
-}
- */
-
-// Implement union-find ourselves, again.
+// Implement union-find ourselves, yet again.
 #[derive(Debug, Clone, Eq, PartialEq)]
 struct RigUnion {
     ptrs: Vec<usize>,
@@ -241,16 +210,17 @@ impl RigUnion {
             assert!(self.ptrs[tgt2] < tgt2);
             tgt2 = self.ptrs[tgt2];
         }
+        // Use lowest index as target.
         let tgt = tgt1.min(tgt2);
 
-        // Repoint idx1's chain.
+        // Repoint idx1's chain to target.
         while self.ptrs[idx1] != idx1 {
             let tmp = self.ptrs[idx1];
             self.ptrs[idx1] = tgt;
             idx1 = tmp;
         }
         self.ptrs[idx1] = tgt;
-        // Repoint idx2's chain.
+        // Repoint idx2's chain to target.
         while self.ptrs[idx2] != idx2 {
             let tmp = self.ptrs[idx2];
             self.ptrs[idx2] = tgt;
@@ -259,7 +229,9 @@ impl RigUnion {
         self.ptrs[idx2] = tgt;
     }
 
-    fn to_classes(&mut self) -> Vec<Vec<Rig>> {
+    // Break our data structure down into an array of equivalence
+    // classes.
+    fn get_classes(&mut self) -> Vec<Vec<Rig>> {
         let mut sets: HashMap<usize, Vec<Rig>> = HashMap::new();
         for i in 0..NUM_RIGS {
             let rig = Rig::from(i);
@@ -267,11 +239,7 @@ impl RigUnion {
             self.union(&rig, &rig);
 
             let tgt = self.ptrs[i];
-            if !sets.contains_key(&tgt) {
-                sets.insert(tgt, vec![rig]);
-            } else {
-                sets.get_mut(&tgt).unwrap().push(rig);
-            }
+	    sets.entry(tgt).or_insert(Vec::new()).push(rig);
         }
         sets.into_values().collect::<Vec<_>>()
     }
@@ -280,6 +248,8 @@ impl RigUnion {
 fn main() {
     let mut equiv_classes = RigUnion::new();
 
+    // First of all, generate the equivalence classes over rigs and
+    // their squares.
     for i in 0..NUM_RIGS {
         // Identify all rigs with their squares.
         let rig = Rig::from(i);
@@ -287,14 +257,24 @@ fn main() {
         equiv_classes.union(&rig, &rigrig);
     }
 
-    let mut old = RigUnion::new();
+    // And then identify all the results of addition and
+    // multiplication - that is, if A and B are equivalence classes,
+    // ensure A_i * B_j are all in the same class, and A_i + B_j are
+    // also in the same class.
 
+    // I'm not absolutely totally sure one pass does here (I think it
+    // does, since union-find should do its magic), so iterate until
+    // fixed point, just in case.
+    let mut old = RigUnion::new();
     while equiv_classes != old {
         old = equiv_classes.clone();
 
         // Identify different variants over addition
         for i in 0..NUM_RIGS {
-            println!("{}", i);
+            // Slow enough that you want to run in release mode, and
+            // displaying lots of numbers makes it feel like
+            // progress. This is inefficient code!
+            eprintln!("a{}", i);
             for j in 0..NUM_RIGS {
                 let tgti = equiv_classes.ptrs[i];
                 let tgtj = equiv_classes.ptrs[j];
@@ -315,7 +295,7 @@ fn main() {
 
         // Identify different variants over multiplication
         for i in 0..NUM_RIGS {
-            println!("{}", i);
+            eprintln!("m{}", i);
             for j in 0..NUM_RIGS {
                 let tgti = equiv_classes.ptrs[i];
                 let tgtj = equiv_classes.ptrs[j];
@@ -335,34 +315,24 @@ fn main() {
         }
     }
 
-    for (idx, ec) in equiv_classes.to_classes().iter().enumerate() {
-        print!("\n{}: ", idx);
-        for elt in ec.iter() {
-            print!("{}, ", elt);
-        }
-    }
-
-    /*
-        let equiv_classes: Vec<Vec<Rig>> = Rig::basis().iter().map(|x| vec![*x]).collect();
-
-        for ec in equiv_classes.iter() {
-        for elt in ec.iter() {
-            print!("{}", &elt);
-        }
-        println!("");
-    }
-         */
-    /*    let new_elts = find_new_elements(&Rig::basis());
-        for elt in new_elts.iter() {
-            println!("{}", &elt);
-        }
-    */
-    /*
-        in Rig::basis() {
-            for r2 in Rig::basis() {
-                println!("{} * {} = {}", r1, r2, r1.mul(&r2));
-                println!("{} + {} = {}", r1, r2, r1.add(&r2));
+    // Could print out all the equivalence classes...
+    if false {
+        for (idx, ec) in equiv_classes.get_classes().iter().enumerate() {
+            print!("\n{}: ", idx);
+            for elt in ec.iter() {
+                print!("{}, ", elt);
             }
+        }
     }
-        */
+
+    // But let's just print out class sizes and # classes:
+    let mut classes = equiv_classes
+        .get_classes()
+        .iter()
+        .map(|x| x.len())
+        .collect::<Vec<usize>>();
+    classes.sort();
+    classes.reverse();
+    println!("Class sizes: {:?}", &classes);
+    println!("\nTotal number of elements: {}", classes.len());
 }
