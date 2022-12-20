@@ -4,9 +4,10 @@
 // https://mastodon.xyz/@johncarlosbaez@mathstodon.xyz/109544917481142671
 //
 
+use std::collections::HashSet;
 use std::fmt;
 
-#[derive(Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, Hash, PartialEq, Ord, PartialOrd)]
 struct Rig {
     i: usize,
     a: usize,
@@ -65,6 +66,7 @@ impl Rig {
         ]
     }
 
+    // Rules written out by hand because I'm silly.
     fn add(&self, other: &Rig) -> Rig {
         Rig {
             i: self.i + other.i,
@@ -75,6 +77,7 @@ impl Rig {
             aba: self.aba + other.aba,
             bab: self.bab + other.bab,
         }
+        .normalise()
     }
 
     fn mul(&self, other: &Rig) -> Rig {
@@ -131,14 +134,90 @@ impl Rig {
                 + self.bab * other.b
                 + self.bab * other.ab,
         }
+        .normalise()
+    }
+
+    // Due to idempotency, x + x = (x + x) * (x + x) = x + x + x + x,
+    // so we can always reduce 4x to 2x.
+    //
+    // Moreover, 4x y = 4 xy = 2 xy = 2x y, so normalising down
+    // doesn't change the "reachable" elements.
+    fn normalise(&self) -> Rig {
+        fn n(i: usize) -> usize {
+            if i >= 4 {
+                i % 2 + 2
+            } else {
+                i
+            }
+        }
+        Rig {
+            i: n(self.i),
+            a: n(self.a),
+            b: n(self.b),
+            ab: n(self.ab),
+            ba: n(self.ba),
+            aba: n(self.aba),
+            bab: n(self.bab),
+        }
     }
 }
 
-fn main() {
-    for r1 in Rig::basis() {
-        for r2 in Rig::basis() {
-            println!("{} * {} = {}", r1, r2, r1.mul(&r2));
-            println!("{} + {} = {}", r1, r2, r1.add(&r2));
+// Sort list and remove duplicates.
+fn normalise_list(rigs: &[Rig]) -> Vec<Rig> {
+    let mut unique_rigs = rigs
+        .iter()
+        .cloned()
+        .collect::<HashSet<Rig>>()
+        .into_iter()
+        .collect::<Vec<_>>();
+    unique_rigs.sort_unstable();
+    unique_rigs
+}
+
+// Combine pairs of existing elements, and add to the returned vector
+// if they've not been seen before.
+fn find_new_elements(rigs: &[Rig]) -> Vec<Rig> {
+    let mut seen_rigs = rigs.iter().cloned().collect::<HashSet<Rig>>();
+    let mut res = Vec::new();
+    for r1 in rigs.iter() {
+        for r2 in rigs.iter() {
+            let r_add = r1.add(r2);
+            if !seen_rigs.contains(&r_add) {
+                seen_rigs.insert(r_add);
+                res.push(r_add);
+            }
+            let r_mul = r1.mul(r2);
+            if !seen_rigs.contains(&r_mul) {
+                seen_rigs.insert(r_mul);
+                res.push(r_mul);
+            }
         }
     }
+    res
+}
+
+fn main() {
+    /*
+        let equiv_classes: Vec<Vec<Rig>> = Rig::basis().iter().map(|x| vec![*x]).collect();
+
+        for ec in equiv_classes.iter() {
+        for elt in ec.iter() {
+            print!("{}", &elt);
+        }
+        println!("");
+    }
+         */
+    let new_elts = find_new_elements(&Rig::basis());
+    for elt in new_elts.iter() {
+        println!("{}", &elt);
+    }
+
+    /*
+        in Rig::basis() {
+            for r2 in Rig::basis() {
+                println!("{} * {} = {}", r1, r2, r1.mul(&r2));
+                println!("{} + {} = {}", r1, r2, r1.add(&r2));
+            }
+    }
+        */
 }
