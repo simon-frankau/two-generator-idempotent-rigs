@@ -218,62 +218,62 @@ struct RigUnion {
 
 impl RigUnion {
     fn new() -> RigUnion {
-	// Initially, all pointers point to themselves.
-	RigUnion {
-	    ptrs: (0 .. NUM_RIGS).collect::<Vec<_>>(),
-	}
+        // Initially, all pointers point to themselves.
+        RigUnion {
+            ptrs: (0..NUM_RIGS).collect::<Vec<_>>(),
+        }
     }
 
     fn union(&mut self, r1: &Rig, r2: &Rig) {
-	// Not efficient, just get it done.
-	let mut idx1 = r1.to_int();
-	let mut idx2 = r2.to_int();
+        // Not efficient, just get it done.
+        let mut idx1 = r1.to_int();
+        let mut idx2 = r2.to_int();
 
-	// Dereference idx1's chain.
-	let mut tgt1 = idx1;
-	while self.ptrs[tgt1] != tgt1 {
-	    assert!(self.ptrs[tgt1] < tgt1);
-	    tgt1 = self.ptrs[tgt1];
-	}
-	// Dereference idx2's chain.
-	let mut tgt2 = idx2;
-	while self.ptrs[tgt2] != tgt2 {
-	    assert!(self.ptrs[tgt2] < tgt2);
-	    tgt2 = self.ptrs[tgt2];
-	}
-	let tgt = tgt1.min(tgt2);
+        // Dereference idx1's chain.
+        let mut tgt1 = idx1;
+        while self.ptrs[tgt1] != tgt1 {
+            assert!(self.ptrs[tgt1] < tgt1);
+            tgt1 = self.ptrs[tgt1];
+        }
+        // Dereference idx2's chain.
+        let mut tgt2 = idx2;
+        while self.ptrs[tgt2] != tgt2 {
+            assert!(self.ptrs[tgt2] < tgt2);
+            tgt2 = self.ptrs[tgt2];
+        }
+        let tgt = tgt1.min(tgt2);
 
-	// Repoint idx1's chain.
-	while self.ptrs[idx1] != idx1 {
-	    let tmp = self.ptrs[idx1];
-	    self.ptrs[idx1] = tgt;
-	    idx1 = tmp;
-	}
-	self.ptrs[idx1] = tgt;
-	// Repoint idx2's chain.
-	while self.ptrs[idx2] != idx2 {
-	    let tmp = self.ptrs[idx2];
-	    self.ptrs[idx2] = tgt;
-	    idx2 = tmp;
-	}
-	self.ptrs[idx2] = tgt;
+        // Repoint idx1's chain.
+        while self.ptrs[idx1] != idx1 {
+            let tmp = self.ptrs[idx1];
+            self.ptrs[idx1] = tgt;
+            idx1 = tmp;
+        }
+        self.ptrs[idx1] = tgt;
+        // Repoint idx2's chain.
+        while self.ptrs[idx2] != idx2 {
+            let tmp = self.ptrs[idx2];
+            self.ptrs[idx2] = tgt;
+            idx2 = tmp;
+        }
+        self.ptrs[idx2] = tgt;
     }
 
     fn to_classes(&mut self) -> Vec<Vec<Rig>> {
-	let mut sets: HashMap<usize, Vec<Rig>> = HashMap::new();
-	for i in 0..NUM_RIGS {
-	    let rig = Rig::from(i);
-	    // Normalise entry
-	    self.union(&rig, &rig);
-	    
-	    let tgt = self.ptrs[i];
-	    if !sets.contains_key(&tgt) {
-		sets.insert(tgt, vec![rig]);
-	    } else {
-		sets.get_mut(&tgt).unwrap().push(rig);
-	    }
-	}
-	sets.into_values().collect::<Vec<_>>()
+        let mut sets: HashMap<usize, Vec<Rig>> = HashMap::new();
+        for i in 0..NUM_RIGS {
+            let rig = Rig::from(i);
+            // Normalise entry
+            self.union(&rig, &rig);
+
+            let tgt = self.ptrs[i];
+            if !sets.contains_key(&tgt) {
+                sets.insert(tgt, vec![rig]);
+            } else {
+                sets.get_mut(&tgt).unwrap().push(rig);
+            }
+        }
+        sets.into_values().collect::<Vec<_>>()
     }
 }
 
@@ -281,19 +281,67 @@ fn main() {
     let mut equiv_classes = RigUnion::new();
 
     for i in 0..NUM_RIGS {
-	// Identify all rigs with their squares.
-	let rig = Rig::from(i);
-	let rigrig = rig.mul(&rig);
-	equiv_classes.union(&rig, &rigrig);
+        // Identify all rigs with their squares.
+        let rig = Rig::from(i);
+        let rigrig = rig.mul(&rig);
+        equiv_classes.union(&rig, &rigrig);
+    }
+
+    let mut old = RigUnion::new();
+
+    while equiv_classes != old {
+        old = equiv_classes.clone();
+
+        // Identify different variants over addition
+        for i in 0..NUM_RIGS {
+            println!("{}", i);
+            for j in 0..NUM_RIGS {
+                let tgti = equiv_classes.ptrs[i];
+                let tgtj = equiv_classes.ptrs[j];
+
+                if tgti != i || tgtj != j {
+                    let rigi = Rig::from(i);
+                    let rigj = Rig::from(j);
+                    let rigij = rigi.add(&rigj);
+
+                    let trigi = Rig::from(tgti);
+                    let trigj = Rig::from(tgtj);
+                    let trigij = trigi.add(&trigj);
+
+                    equiv_classes.union(&rigij, &trigij);
+                }
+            }
+        }
+
+        // Identify different variants over multiplication
+        for i in 0..NUM_RIGS {
+            println!("{}", i);
+            for j in 0..NUM_RIGS {
+                let tgti = equiv_classes.ptrs[i];
+                let tgtj = equiv_classes.ptrs[j];
+
+                if tgti != i || tgtj != j {
+                    let rigi = Rig::from(i);
+                    let rigj = Rig::from(j);
+                    let rigij = rigi.mul(&rigj);
+
+                    let trigi = Rig::from(tgti);
+                    let trigj = Rig::from(tgtj);
+                    let trigij = trigi.mul(&trigj);
+
+                    equiv_classes.union(&rigij, &trigij);
+                }
+            }
+        }
     }
 
     for (idx, ec) in equiv_classes.to_classes().iter().enumerate() {
-	print!("\n{}: ", idx);
-	for elt in ec.iter() {
-	    print!("{}, ", elt);
-	}
+        print!("\n{}: ", idx);
+        for elt in ec.iter() {
+            print!("{}, ", elt);
+        }
     }
-    
+
     /*
         let equiv_classes: Vec<Vec<Rig>> = Rig::basis().iter().map(|x| vec![*x]).collect();
 
@@ -304,11 +352,11 @@ fn main() {
         println!("");
     }
          */
-/*    let new_elts = find_new_elements(&Rig::basis());
-    for elt in new_elts.iter() {
-        println!("{}", &elt);
-    }
-*/
+    /*    let new_elts = find_new_elements(&Rig::basis());
+        for elt in new_elts.iter() {
+            println!("{}", &elt);
+        }
+    */
     /*
         in Rig::basis() {
             for r2 in Rig::basis() {
