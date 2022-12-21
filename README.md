@@ -56,6 +56,18 @@ This code attempts to answer that question.
 
 The answer, if I haven't made enough mistakes, is 243.
 
+If you want to know more, I have some prepopulated results:
+
+ * [all_classes.txt] lists the elements in equivalence classes, one
+   line per class.
+ * [lexical_element.txt] selects one element per equivalence class,
+   choosing the minimal one according to Rust's auto-derived
+   comparison operator, which I believe should give that
+   lexicographically minimal element per class.
+ * [small_element.txt] selects a "smallest" element, with where the
+   number of non-zero coefficients is zero, tie-broken on sum of the
+   coefficients.
+ 
 ## How did you approach this?
 
 As John Carlos Baez points out, x^4 = x^2, so we can represent any element as

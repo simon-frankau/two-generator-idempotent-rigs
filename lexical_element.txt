@@ -1,0 +1,284 @@
+0
+bab
+2bab
+3bab
+aba
+2aba
+3aba
+ba
+2ba
+3ba
+ab
+2ab
+3ab
+b
+b + 2bab
+2b
+2b + 2bab
+3b
+3b + 2bab
+a
+a + 2aba
+2a
+2a + 2aba
+3a
+3a + 2aba
+1
+1 + 2bab
+1 + 2aba
+1 + 2ba
+1 + 2ab
+1 + 2b
+1 + 2b + 2bab
+1 + 2a
+1 + 2a + 2aba
+2
+2 + 2bab
+2 + 2aba
+2 + 2ba
+2 + 2ab
+2 + 2b
+2 + 2b + 2bab
+2 + 2a
+2 + 2a + 2aba
+3
+3 + 2bab
+3 + 2aba
+3 + 2ba
+3 + 2ab
+3 + 2b
+3 + 2b + 2bab
+3 + 2a
+3 + 2a + 2aba
+b + bab
+2b + bab
+3b + bab
+a + aba
+2a + aba
+3a + aba
+1 + bab
+1 + aba
+1 + ba
+1 + ab
+1 + b
+1 + b + 2bab
+1 + 2b + bab
+1 + a
+1 + a + 2aba
+1 + 2a + aba
+2 + bab
+2 + aba
+2 + ba
+2 + ab
+2 + b
+2 + b + 2bab
+2 + 2b + bab
+2 + a
+2 + a + 2aba
+2 + 2a + aba
+3 + bab
+3 + aba
+3 + ba
+3 + ab
+3 + b
+3 + b + 2bab
+3 + 2b + bab
+3 + a
+3 + a + 2aba
+3 + 2a + aba
+ba + 2bab
+ba + 2aba
+ab + 2bab
+ab + 2aba
+1 + ba + 2bab
+1 + ba + 2aba
+1 + ab + 2bab
+1 + ab + 2aba
+1 + b + bab
+1 + a + aba
+2 + ba + 2bab
+2 + ba + 2aba
+2 + ab + 2bab
+2 + ab + 2aba
+2 + b + bab
+2 + a + aba
+3 + ba + 2bab
+3 + ba + 2aba
+3 + ab + 2bab
+3 + ab + 2aba
+3 + b + bab
+3 + a + aba
+ba + bab
+ba + aba
+ab + bab
+ab + aba
+1 + ba + bab
+1 + ba + aba
+1 + ab + bab
+1 + ab + aba
+2 + ba + bab
+2 + ba + aba
+2 + ab + bab
+2 + ab + aba
+3 + ba + bab
+3 + ba + aba
+3 + ab + bab
+3 + ab + aba
+b + ba
+b + ba + bab
+b + ab
+b + ab + bab
+2b + ba
+2b + ba + bab
+2b + ab
+2b + ab + bab
+3b + ba
+3b + ba + bab
+3b + ab
+3b + ab + bab
+a + ba
+a + ba + aba
+a + ab
+a + ab + aba
+2a + ba
+2a + ba + aba
+2a + ab
+2a + ab + aba
+3a + ba
+3a + ba + aba
+3a + ab
+3a + ab + aba
+1 + 2b + ba
+1 + 2b + ba + bab
+1 + 2b + ab
+1 + 2b + ab + bab
+1 + 2a + ba
+1 + 2a + ba + aba
+1 + 2a + ab
+1 + 2a + ab + aba
+2 + 2b + ba
+2 + 2b + ba + bab
+2 + 2b + ab
+2 + 2b + ab + bab
+2 + 2a + ba
+2 + 2a + ba + aba
+2 + 2a + ab
+2 + 2a + ab + aba
+3 + 2b + ba
+3 + 2b + ba + bab
+3 + 2b + ab
+3 + 2b + ab + bab
+3 + 2a + ba
+3 + 2a + ba + aba
+3 + 2a + ab
+3 + 2a + ab + aba
+1 + b + ba
+1 + b + ba + bab
+1 + b + ab
+1 + b + ab + bab
+1 + a + ba
+1 + a + ba + aba
+1 + a + ab
+1 + a + ab + aba
+2 + b + ba
+2 + b + ba + bab
+2 + b + ab
+2 + b + ab + bab
+2 + a + ba
+2 + a + ba + aba
+2 + a + ab
+2 + a + ab + aba
+3 + b + ba
+3 + b + ba + bab
+3 + b + ab
+3 + b + ab + bab
+3 + a + ba
+3 + a + ba + aba
+3 + a + ab
+3 + a + ab + aba
+aba + bab
+1 + aba + bab
+2 + aba + bab
+3 + aba + bab
+aba + 2bab
+1 + aba + 2bab
+2 + aba + 2bab
+3 + aba + 2bab
+b + aba
+b + aba + bab
+2b + aba
+2b + aba + bab
+3b + aba
+3b + aba + bab
+a + bab
+a + 2bab
+2a + bab
+2a + 2bab
+3a + bab
+3a + 2bab
+1 + 2b + aba
+1 + 2b + aba + bab
+1 + 2a + bab
+1 + 2a + 2bab
+2 + 2b + aba
+2 + 2b + aba + bab
+2 + 2a + bab
+2 + 2a + 2bab
+3 + 2b + aba
+3 + 2b + aba + bab
+3 + 2a + bab
+3 + 2a + 2bab
+a + b
+a + b + bab
+a + 2b
+a + 2b + bab
+a + 3b
+a + 3b + bab
+2a + b
+2a + b + bab
+2a + 2b
+2a + 2b + bab
+2a + 3b
+2a + 3b + bab
+3a + b
+3a + b + bab
+3a + 2b
+3a + 2b + bab
+3a + 3b
+3a + 3b + bab
+1 + 2a + 2b
+1 + 2a + 2b + bab
+2 + 2a + 2b
+2 + 2a + 2b + bab
+3 + 2a + 2b
+3 + 2a + 2b + bab
+1 + b + aba
+1 + b + aba + bab
+1 + a + bab
+1 + a + 2bab
+2 + b + aba
+2 + b + aba + bab
+2 + a + bab
+2 + a + 2bab
+3 + b + aba
+3 + b + aba + bab
+3 + a + bab
+3 + a + 2bab
+1 + a + 2b
+1 + a + 2b + bab
+1 + 2a + b
+1 + 2a + b + bab
+2 + a + 2b
+2 + a + 2b + bab
+2 + 2a + b
+2 + 2a + b + bab
+3 + a + 2b
+3 + a + 2b + bab
+3 + 2a + b
+3 + 2a + b + bab
+1 + a + b
+1 + a + b + bab
+2 + a + b
+2 + a + b + bab
+3 + a + b
+3 + a + b + bab

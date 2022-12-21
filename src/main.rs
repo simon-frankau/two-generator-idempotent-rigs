@@ -239,9 +239,16 @@ impl RigUnion {
             self.union(&rig, &rig);
 
             let tgt = self.ptrs[i];
-	    sets.entry(tgt).or_insert(Vec::new()).push(rig);
+            sets.entry(tgt).or_insert(Vec::new()).push(rig);
         }
-        sets.into_values().collect::<Vec<_>>()
+        // Sort by set size, then minimal value, to have consistent
+        // output.
+        let mut classes = sets
+            .into_values()
+            .map(|x| (x.len(), x.iter().min().unwrap().clone(), x))
+            .collect::<Vec<_>>();
+        classes.sort();
+        classes.into_iter().map(|x| x.2).collect::<Vec<_>>()
     }
 }
 
@@ -315,24 +322,62 @@ fn main() {
         }
     }
 
-    // Could print out all the equivalence classes...
-    if false {
-        for (idx, ec) in equiv_classes.get_classes().iter().enumerate() {
-            print!("\n{}: ", idx);
-            for elt in ec.iter() {
-                print!("{}, ", elt);
-            }
+    fn cost(r: &Rig) -> (usize, usize) {
+        let ci = if r.i != 0 { 1 } else { 0 };
+        let ca = if r.a != 0 { 1 } else { 0 };
+        let cb = if r.b != 0 { 1 } else { 0 };
+        let cab = if r.ab != 0 { 1 } else { 0 };
+        let cba = if r.ba != 0 { 1 } else { 0 };
+        let caba = if r.aba != 0 { 1 } else { 0 };
+        let cbab = if r.bab != 0 { 1 } else { 0 };
+
+        (
+            ci + ca + cb + cab + cba + caba + cbab,
+            r.i + r.a + r.b + r.ab + r.ba + r.aba + r.bab,
+        )
+    }
+
+    const PRINT_SMALLEST: bool = false;
+    const PRINT_LEXI: bool = false;
+    const PRINT_ALL: bool = true;
+    
+    // Print "smallest" element of each equivalence class.
+    if PRINT_SMALLEST {
+        for ec in equiv_classes.get_classes().iter() {
+            println!("{}", ec.iter().map(|x| (cost(x), x)).min().unwrap().1);
         }
     }
 
-    // But let's just print out class sizes and # classes:
-    let mut classes = equiv_classes
-        .get_classes()
-        .iter()
-        .map(|x| x.len())
-        .collect::<Vec<usize>>();
-    classes.sort();
-    classes.reverse();
-    println!("Class sizes: {:?}", &classes);
-    println!("\nTotal number of elements: {}", classes.len());
+    // Print lexicographically-first element in each equivalence
+    // class, according to Rust's auto-generated comparison operator.
+    if PRINT_LEXI {
+        for ec in equiv_classes.get_classes().iter() {
+            println!("{}", ec.iter().min().unwrap());
+        }
+    }
+    
+    if PRINT_ALL {
+        for ec in equiv_classes.get_classes().iter() {
+	    // Sort each set lexicographically, for consistent output.
+	    let mut tmp: Vec<_> = ec.clone();
+	    tmp.sort();
+	    for elt in tmp.iter() {
+		print!("{}, ", elt);
+	    }
+	    println!("");
+        }
+    }
+
+    if !PRINT_SMALLEST && !PRINT_LEXI && !PRINT_ALL {
+	// Just print a summary.
+	let mut classes = equiv_classes
+            .get_classes()
+            .iter()
+            .map(|x| x.len())
+            .collect::<Vec<usize>>();
+	classes.sort();
+	classes.reverse();
+	println!("Class sizes: {:?}", &classes);
+	println!("\nTotal number of elements: {}", classes.len());
+    }
 }
