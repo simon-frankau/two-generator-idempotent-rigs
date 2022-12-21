@@ -54,7 +54,7 @@ This code attempts to answer that question.
 
 ## And?
 
-The answer, if I haven't made enough mistakes, is 243.
+The answer, if I haven't made enough mistakes, is 284.
 
 If you want to know more, I have some prepopulated results:
 
@@ -70,7 +70,8 @@ If you want to know more, I have some prepopulated results:
  
 ## How did you approach this?
 
-As John Carlos Baez points out, x^4 = x^2, so we can represent any element as
+As John Carlos Baez points out, x + x + x + x = x + x, so we can
+represent any element as
 
 ```
 [0..3] + [0..3]a + [0..3]b + [0..3]ab + [0..3]ba + [0..3]aba + [0..3]bab
